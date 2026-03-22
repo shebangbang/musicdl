@@ -1,13 +1,16 @@
 [project]
 name = "musicdl"
 version = "0.1.0"
-description = "Add your description here"
+description = "A Tidal track downloader, indentified using their track ID. "
 readme = "README.md"
 authors = [
     { name = "arlecchino", email = "miscellaneous2020@outlook.com" }
 ]
 requires-python = ">=3.14"
-dependencies = []
+dependencies = [
+    "dotenv>=0.9.9",
+    "requests>=2.32.5",
+]
 
 [project.scripts]
 musicdl = "musicdl.main:main"
