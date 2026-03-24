@@ -9,9 +9,6 @@ uv run python -m musicdl 123
 """
 
 import logging
-import os
-
-from dotenv import load_dotenv
 
 from musicdl.api import APIClient
 from musicdl.cli import create_arg_parser

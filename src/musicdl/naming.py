@@ -1,5 +1,3 @@
-import os
-
 from musicdl.config import settings
 from musicdl.models import Track
 

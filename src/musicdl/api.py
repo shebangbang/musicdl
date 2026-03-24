@@ -2,7 +2,6 @@ import base64
 import binascii
 import datetime
 import json
-import os
 from enum import Enum
 from typing import Any
 
@@ -14,7 +13,6 @@ from musicdl.exceptions import (
     InvalidIDError,
     MalformedJSONError,
     ManifestParsingError,
-    MissingAPIError,
     MissingDownloadURLError,
     MissingMetadataError,
 )
@@ -73,10 +71,7 @@ class APIClient:
         """
         parameters = {"id": resource_id}
         if resource_type == Resource.TRACK:
-            try:
-                parameters["quality"] = os.environ["QUALITY"]
-            except KeyError:
-                parameters["quality"] = "LOSSLESS"
+            parameters["quality"] = settings.quality
         try:
             r = self.session.get(
                 f"{self.api}/{resource_type.value}/",

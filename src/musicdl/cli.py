@@ -1,8 +1,6 @@
 import argparse
 
-CLI_DESCRIPTION = (
-    "The musicdl CLI validates IDs and downloads the corresponding track/album."
-)
+CLI_DESCRIPTION = "The musicdl CLI validates IDs and downloads the corresponding track/album."
 
 LICENSE_TEXT = """
     ============================== LICENSE =======================================
@@ -54,9 +52,7 @@ def create_arg_parser() -> argparse.ArgumentParser:
         formatter_class=argparse.RawTextHelpFormatter,
     )
 
-    parser.add_argument(
-        "resource_type", choices=("track", "album"), help="Resource Type"
-    )
+    parser.add_argument("resource_type", choices=("track", "album"), help="Resource Type")
     parser.add_argument("resource_id", help="Resource ID")
     parser.add_argument(
         "-l",
@@ -67,11 +63,7 @@ def create_arg_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument("-f", "--folder", help="Output folder path")
     verbosity_group = parser.add_mutually_exclusive_group()
-    verbosity_group.add_argument(
-        "-q", "--quiet", help="Use quiet output", action="store_true"
-    )
-    verbosity_group.add_argument(
-        "-v", "--verbose", help="Use verbose output", action="store_true"
-    )
+    verbosity_group.add_argument("-q", "--quiet", help="Use quiet output", action="store_true")
+    verbosity_group.add_argument("-v", "--verbose", help="Use verbose output", action="store_true")
 
     return parser

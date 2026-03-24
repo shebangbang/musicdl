@@ -17,7 +17,6 @@ dependencies = [
     "pytest>=9.0.2",
     "requests>=2.32.5",
     "ruff>=0.15.7",
-    "validators>=0.35.0",
 ]
 
 [project.scripts]
@@ -32,8 +31,6 @@ dev = [
   {include-group = "lint"},
   {include-group = "test"},
   "pre-commit",
-  "just",
-
 ]
 lint = [
   "ruff"
@@ -51,7 +48,7 @@ pythonVersion = "3.14"
 pythonPlatform = "Linux"
 
 [tool.uv]
-package = false
+package = true
 resolution = "highest"
 
 [tool.uv-dynamic-versioning]

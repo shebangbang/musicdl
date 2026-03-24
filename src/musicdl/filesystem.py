@@ -1,11 +1,8 @@
 import os
-import tempfile
 import threading
 from pathlib import Path
 
 from platformdirs import user_cache_dir, user_downloads_dir
-
-from musicdl.models import Track
 
 DEFAULT_CACHE_SUBDIRECTORY = "musicdl"
 
