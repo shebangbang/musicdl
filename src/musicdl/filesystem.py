@@ -3,6 +3,10 @@ import tempfile
 import threading
 from pathlib import Path
 
+from platformdirs import user_cache_dir, user_downloads_dir
+
+from musicdl.models import Track
+
 DEFAULT_CACHE_SUBDIRECTORY = "musicdl"
 
 
@@ -32,17 +36,25 @@ class SimpleFileLock:
             self._lock.release()
 
 
+def _resolve_directory(path_string: str | None, default: Path) -> Path:
+    if path_string:
+        try:
+            path = Path(path_string).expanduser().resolve()
+            path.mkdir(parents=True, exist_ok=True)
+            return path
+        except TypeError, ValueError, OSError:
+            pass
+    default.mkdir(parents=True, exist_ok=True)
+    return default
+
+
 def resolve_output_directory(output_directory: str | None = None) -> Path:
     """
     Figures out where to place the output files.
     """
 
-    if output_directory:
-        return Path(output_directory)
-    user_override = os.environ["OUTPUT_DIRECTORY"]
-    if user_override:
-        return Path(user_override).expanduser().resolve()
-    return Path().home() / "Downloads"
+    default = Path(user_downloads_dir())
+    return _resolve_directory(output_directory, default)
 
 
 def resolve_cache_directory(cache_directory: str | None = None) -> Path:
@@ -50,12 +62,5 @@ def resolve_cache_directory(cache_directory: str | None = None) -> Path:
     Figures out where to place the cache files.
     """
 
-    if cache_directory:
-        return Path(cache_directory)
-    user_override = os.environ["CACHE_DIRECTORY"]
-    if user_override:
-        return Path(user_override).expanduser().resolve()
-    xdg = os.getenv("XDG_CACHE_HOME")
-    if xdg:
-        return Path(xdg).expanduser() / DEFAULT_CACHE_SUBDIRECTORY
-    return Path().home() / ".cache" / DEFAULT_CACHE_SUBDIRECTORY
+    default = Path(user_cache_dir())
+    return _resolve_directory(cache_directory, default)

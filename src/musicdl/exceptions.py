@@ -10,9 +10,7 @@ class InvalidIDError(APIError):
 
 class MissingAPIError(APIError):
     def __init__(self):
-        super().__init__(
-            "MissingAPIError: Environment variable API_URL and API_URL_BAK missing"
-        )
+        super().__init__("MissingAPIError: Environment variable API_URL and API_URL_BAK missing")
 
 
 class APINetworkError(APIError):
@@ -20,11 +18,9 @@ class APINetworkError(APIError):
         return super().__init__("APINetworkError: Failed to communicate with the API")
 
 
-class MalformedResponseError(APIError):
+class MalformedJSONError(APIError):
     def __init__(self):
-        return super().__init__(
-            "MalformedResponseError: Returned JSON object is malformed"
-        )
+        return super().__init__("MalformedJSONError: Returned JSON object is malformed")
 
 
 class MissingDownloadURLError(APIError):
@@ -39,9 +35,7 @@ class MissingMetadataError(APIError):
 
 class ManifestParsingError(APIError):
     def __init__(self):
-        return super().__init__(
-            "ManifestParsingError: Download link could not be decoded and parsed from the manifest"
-        )
+        return super().__init__("ManifestParsingError: Download link could not be decoded and parsed from the manifest")
 
 
 class DownloaderError(Exception):
@@ -49,20 +43,11 @@ class DownloaderError(Exception):
         super().__init__(f"[Downloader] {message}")
 
 
-class InvalidURLError(DownloaderError):
-    def __init__(self):
-        return super().__init__("InvalidURLError: Download URL invalid")
-
-
 class SizeMismatchError(DownloaderError):
     def __init__(self, file_name: str):
-        return super().__init__(
-            f"SizeMismatchError: Track '{file_name}' is of smaller/larger size than expected"
-        )
+        return super().__init__(f"SizeMismatchError: Track '{file_name}' is of smaller/larger size than expected")
 
 
 class DownloadFailureError(DownloaderError):
     def __init__(self, track_name: str):
-        return super().__init__(
-            f"DownloadFailureError: Failed to download the track '{track_name}'"
-        )
+        return super().__init__(f"DownloadFailureError: Failed to download the track '{track_name}'")

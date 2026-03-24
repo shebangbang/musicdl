@@ -8,21 +8,17 @@ from typing import Any
 
 import requests
 
+from musicdl.config import settings
 from musicdl.exceptions import (
     APINetworkError,
     InvalidIDError,
-    MalformedResponseError,
+    MalformedJSONError,
     ManifestParsingError,
     MissingAPIError,
     MissingDownloadURLError,
     MissingMetadataError,
 )
 from musicdl.models import Track
-
-try:
-    TIMEOUT = int(os.environ["TIMEOUT"])
-except KeyError:
-    TIMEOUT = 3
 
 
 class Resource(Enum):
@@ -64,18 +60,14 @@ class APIClient:
     def __init__(self, api: str):
         self.api = api
         self.session = requests.Session()
-        self.session.headers.update(
-            {
-                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
-                "(KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-                "Accept": "application/json, text/plain, */*",
-                "Connection": "keep-alive",
-            }
-        )
+        self.session.headers.update({
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+            "(KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+            "Accept": "application/json, text/plain, */*",
+            "Connection": "keep-alive",
+        })
 
-    def _fetch_resource_info(
-        self, resource_type: Resource, resource_id: int
-    ) -> dict[str, Any]:
+    def _fetch_resource_info(self, resource_type: Resource, resource_id: int) -> dict[str, Any]:
         """
         Generic resource info fetcher.
         """
@@ -89,7 +81,7 @@ class APIClient:
             r = self.session.get(
                 f"{self.api}/{resource_type.value}/",
                 params=parameters,
-                timeout=TIMEOUT,
+                timeout=settings.timeout,
             )
             r.raise_for_status()
         except requests.exceptions.ConnectionError:
@@ -101,10 +93,10 @@ class APIClient:
         if _check_response_validity(data):
             return data
         else:
-            raise MalformedResponseError
+            raise MalformedJSONError
 
     def fetch_track_info(self, track_id: int) -> Track:
-        # fetch info
+        # Fetch info
         track_data = self._fetch_resource_info(Resource.INFO, track_id)["data"]
 
         album_id = track_data["album"]["id"]
@@ -113,10 +105,13 @@ class APIClient:
         track_location = self._fetch_resource_info(Resource.TRACK, track_id)["data"]
         download_url = _decode_and_parse_manifest(track_location["manifest"])
 
-        # create track object
+        title_combined = (
+            f"{track_data['title']} ({track_data['version']})" if track_data["version"] else track_data["title"]
+        )
+        # Create track object
         try:
             track = Track(
-                track_data["title"],
+                title_combined,
                 track_data["album"]["title"],
                 track_data["artist"]["name"],
                 [artist["name"] for artist in track_data["artists"]],
@@ -126,9 +121,7 @@ class APIClient:
                 album_metadata["numberOfVolumes"],
                 track_data["isrc"],
                 track_data["copyright"],
-                datetime.datetime.strptime(
-                    album_metadata["releaseDate"], "%Y-%m-%d"
-                ).date(),
+                datetime.datetime.strptime(album_metadata["releaseDate"], "%Y-%m-%d").date(),
                 track_data["bpm"],
                 track_data["replayGain"],
                 track_data["peak"],
@@ -139,17 +132,3 @@ class APIClient:
             raise MissingMetadataError
 
         return track
-
-    @classmethod
-    def from_env(cls):
-        """
-        Helper to create an object with a value from the environment.
-        """
-        try:
-            api = os.environ["API_URL"]
-        except KeyError:
-            try:
-                api = os.environ["API_URL_BAK"]
-            except KeyError:
-                raise MissingAPIError
-        return cls(api)

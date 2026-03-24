@@ -1,15 +1,22 @@
 [project]
 name = "musicdl"
 version = "0.1.0"
-description = "A Tidal track downloader, indentified using their track ID. "
+description = "A Tidal track downloader, indentified using their track ID."
 readme = "README.md"
 authors = [
     { name = "arlecchino", email = "miscellaneous2020@outlook.com" }
 ]
+maintainers = [
+    { name = "arlecchino", email = "miscellaneous2020@outlook.com" }
+]
+license = "MIT"
 requires-python = ">=3.14"
 dependencies = [
     "dotenv>=0.9.9",
+    "platformdirs>=4.9.4",
+    "pytest>=9.0.2",
     "requests>=2.32.5",
+    "ruff>=0.15.7",
     "validators>=0.35.0",
 ]
 
@@ -19,3 +26,56 @@ musicdl = "musicdl.main:main"
 [build-system]
 requires = ["uv_build>=0.10.9,<0.11.0"]
 build-backend = "uv_build"
+
+[dependency-groups]
+dev = [
+  {include-group = "lint"},
+  {include-group = "test"},
+  "pre-commit",
+  "just",
+
+]
+lint = [
+  "ruff"
+]
+test = [
+  "pytest"
+]
+
+# Reference: https://microsoft.github.io/pyright/#/configuration
+[tool.pyright]
+venvPath = "."
+venv = ".venv"
+reportMissingImports = true
+pythonVersion = "3.14"
+pythonPlatform = "Linux"
+
+[tool.uv]
+package = false
+resolution = "highest"
+
+[tool.uv-dynamic-versioning]
+fallback-version = "0.0.0"
+
+[tool.ruff]
+line-length = 120
+indent-width = 4
+respect-gitignore = true
+
+[tool.ruff.lint]
+preview = true
+select = ["E","F","W","I"]
+ignore = ["E501"]
+extend-safe-fixes = ["E"]
+fixable = ["ALL"]
+unfixable = []
+
+[tool.ruff.format]
+preview = true
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "lf"
+
+[tool.ruff.lint.pydocstyle]
+convention = "pep257"
