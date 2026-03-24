@@ -9,6 +9,9 @@
 *.orig
 /TODO.org
 
+# Log Files
+*.log
+
 # Editor Specific Files
 \#*
 .#*

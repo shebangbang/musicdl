@@ -30,12 +30,15 @@ def main(argv: list[str] | None = None) -> int:
     parser = create_arg_parser()
     parsed_args = parser.parse_args(args=argv)
 
-    verbosity_level = logging.INFO
     if parsed_args.quiet:
         verbosity_level = logging.ERROR
     elif parsed_args.verbose:
         verbosity_level = logging.DEBUG
-    logging.basicConfig(filename="musicdl.log", level=verbosity_level)
+    else:
+        verbosity_level = logging.INFO
+    logging.basicConfig(
+        filename="musicdl.log", level=verbosity_level, format="%(asctime)s - %(levelname)s - %(message)s"
+    )
 
     api_client = APIClient(settings.api_url)
 
@@ -45,14 +48,16 @@ def main(argv: list[str] | None = None) -> int:
         if parsed_args.resource_type == "track":
             # API
             track = api_client.fetch_track_info(parsed_args.resource_id)
-            print(track.artist)
 
             # Downloader
             # TODO: Check availability of quality
             file_name = generate_filename(track)
+            logging.info(f"Downloading {file_name}")
             track_file, track_size = downloader.download(file_name, track.download_url)
+            logging.info("Download complete")
     except (APIError, DownloaderError) as e:
         if verbosity_level > 0:
+            logger.error(e)
             print(e)
         return 1
 

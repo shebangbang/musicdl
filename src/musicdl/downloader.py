@@ -1,3 +1,4 @@
+import logging
 from pathlib import Path
 
 import requests
@@ -11,6 +12,8 @@ from musicdl.filesystem import SimpleFileLock
 
 CHUNK_SIZE = 64 * 1024  # 64KB
 LOCK_NAME = ".musicdl.lock"
+
+logger = logging.getLogger(__name__)
 
 
 class Downloader:
@@ -38,6 +41,7 @@ class Downloader:
                 # Obtain output path and check if already present
                 output_path = self.output_directory / file_name
                 if output_path.exists():
+                    logger.debug("File already exists")
                     return output_path, output_path.stat().st_size
                 temporary_file = output_path.with_suffix(output_path.suffix + ".part")
 
@@ -47,7 +51,6 @@ class Downloader:
                 if current_size > 0:
                     headers["Range"] = f"bytes={current_size}-"
 
-                # TODO: Obtain timeout from env
                 with self.session.get(url, timeout=settings.timeout, stream=True, headers=headers) as track:
                     # Obtain file size
                     content_length = track.headers.get("Content-Length")
@@ -55,11 +58,13 @@ class Downloader:
 
                     # Restart download in case resuming is not possible
                     if track.status_code == 200 and current_size > 0:
-                        # TODO: Figure out how to log restart
+                        logger.debug("No resume capability; restarting download")
                         current_size = 0
                         temporary_file.unlink(missing_ok=True)
                     elif track.status_code == 206:
                         final_size += current_size
+                        logger.debug(f"Resuming download from byte {current_size}")
+                        logger.debug(f"Expected final size: {final_size}")
                     track.raise_for_status()
 
                     # Download
