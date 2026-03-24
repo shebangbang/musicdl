@@ -15,9 +15,9 @@ class MissingAPIError(APIError):
         )
 
 
-class NetworkError(APIError):
+class APINetworkError(APIError):
     def __init__(self):
-        return super().__init__("NetworkError: Failed to communicate with the API")
+        return super().__init__("APINetworkError: Failed to communicate with the API")
 
 
 class MalformedResponseError(APIError):
@@ -41,4 +41,28 @@ class ManifestParsingError(APIError):
     def __init__(self):
         return super().__init__(
             "ManifestParsingError: Download link could not be decoded and parsed from the manifest"
+        )
+
+
+class DownloaderError(Exception):
+    def __init__(self, message):
+        super().__init__(f"[Downloader] {message}")
+
+
+class InvalidURLError(DownloaderError):
+    def __init__(self):
+        return super().__init__("InvalidURLError: Download URL invalid")
+
+
+class SizeMismatchError(DownloaderError):
+    def __init__(self, file_name: str):
+        return super().__init__(
+            f"SizeMismatchError: Track '{file_name}' is of smaller/larger size than expected"
+        )
+
+
+class DownloadFailureError(DownloaderError):
+    def __init__(self, track_name: str):
+        return super().__init__(
+            f"DownloadFailureError: Failed to download the track '{track_name}'"
         )

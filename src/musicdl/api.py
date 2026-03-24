@@ -9,13 +9,13 @@ from typing import Any
 import requests
 
 from musicdl.exceptions import (
+    APINetworkError,
     InvalidIDError,
     MalformedResponseError,
     ManifestParsingError,
     MissingAPIError,
     MissingDownloadURLError,
     MissingMetadataError,
-    NetworkError,
 )
 from musicdl.models import Track
 
@@ -93,7 +93,7 @@ class APIClient:
             )
             r.raise_for_status()
         except requests.exceptions.ConnectionError:
-            raise NetworkError
+            raise APINetworkError
         except requests.exceptions.HTTPError:
             raise InvalidIDError
 
@@ -142,6 +142,9 @@ class APIClient:
 
     @classmethod
     def from_env(cls):
+        """
+        Helper to create an object with a value from the environment.
+        """
         try:
             api = os.environ["API_URL"]
         except KeyError:

@@ -14,7 +14,9 @@ from dotenv import load_dotenv
 
 from musicdl.api import APIClient
 from musicdl.cli import create_arg_parser
-from musicdl.exceptions import APIError
+from musicdl.downloader import Downloader
+from musicdl.exceptions import APIError, DownloaderError
+from musicdl.util import resolve_output_directory
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -36,20 +38,25 @@ def main(argv: list[str] | None = None) -> int:
         verbosity_level = 0
     elif parsed_args.verbose:
         verbosity_level = 2
-        if "QUALITY" not in os.environ:
+        if not os.environ["QUALITY"]:
             print("Defaulting to LOSSLESS quality.")
 
-    # API
     api_client = APIClient.from_env()
 
-    if verbosity_level == 2 and "QUALITY" not in os.environ:
-        print("Defaulting to LOSSLESS quality.")
+    output_dir = resolve_output_directory()
+    print(output_dir)
+    downloader = Downloader(output_dir)
 
     try:
         if parsed_args.resource_type == "track":
             track = api_client.fetch_track_info(parsed_args.resource_id)
             print(track.artist)
-    except APIError as e:
+
+            # downloader
+            track_file, track_size = downloader.download(
+                track.title, track.download_url
+            )
+    except (APIError, DownloaderError) as e:
         if verbosity_level > 0:
             print(e)
         return 1
