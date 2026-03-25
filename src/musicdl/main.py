@@ -15,6 +15,7 @@ from musicdl.cli import create_arg_parser
 from musicdl.config import settings
 from musicdl.downloader import Downloader
 from musicdl.exceptions import APIError, DownloaderError
+from musicdl.metadata import write_flac_metadata
 from musicdl.naming import generate_filename
 
 logger = logging.getLogger(__name__)
@@ -36,9 +37,7 @@ def main(argv: list[str] | None = None) -> int:
         verbosity_level = logging.DEBUG
     else:
         verbosity_level = logging.INFO
-    logging.basicConfig(
-        filename="musicdl.log", level=verbosity_level, format="%(asctime)s - %(levelname)s - %(message)s"
-    )
+    logging.getLogger().setLevel(verbosity_level)
 
     api_client = APIClient(settings.api_url)
 
@@ -51,10 +50,20 @@ def main(argv: list[str] | None = None) -> int:
 
             # Downloader
             # TODO: Check availability of quality
-            file_name = generate_filename(track)
+            file_name, file_extension = generate_filename(track)
             logging.info(f"Downloading {file_name}")
-            track_file, track_size = downloader.download(file_name, track.download_url)
+            track_location, track_size = downloader.download(file_name, track.download_url)
+            logging.info(f"{file_name} downloaded")
+
+            logging.info("Downloading cover")
+            cover_location, cover_size = downloader.download("cover.jpg", track.cover_url)
             logging.info("Download complete")
+
+            # Tagging
+            logging.info("Attempting to tag track")
+            write_flac_metadata(track_location, cover_location, track)
+            logging.info("Tagging complete")
+
     except (APIError, DownloaderError) as e:
         if verbosity_level > 0:
             logger.error(e)

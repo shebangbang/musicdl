@@ -9,6 +9,7 @@ from musicdl.filesystem import resolve_cache_directory, resolve_output_directory
 
 load_dotenv()
 
+logging.basicConfig(filename="musicdl.log", level=logging.DEBUG, format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
 
 

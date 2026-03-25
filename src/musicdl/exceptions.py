@@ -8,6 +8,11 @@ class InvalidIDError(APIError):
         super().__init__("InvalidIDError: Invalid resource ID")
 
 
+class APIRequestTimeout(APIError):
+    def __init__(self):
+        super().__init__("APIRequestTimeout: Request timed out")
+
+
 class MissingAPIError(APIError):
     def __init__(self):
         super().__init__("MissingAPIError: Environment variable API_URL and API_URL_BAK missing")

@@ -4,12 +4,17 @@ import json
 import requests
 
 API = "https://api.monochrome.tf"
-track_id = 68737746
+track_id = 17342670
 album_id = 204620341
 
 # request track info
 # r = requests.get(f"{API}/track/", params={"id": track_id, "quality": "LOSSLESS"})
-r = requests.get(f"{API}/album/", params={"id": album_id})
+# r = requests.get(f"{API}/album/", params={"id": album_id})
+# data = r.json()
+# print(data)
+print()
+print("lyrics")
+r = requests.get(f"{API}/lyrics/", params={"id": track_id})
 data = r.json()
 print(data)
 print()
@@ -32,9 +37,9 @@ download_url = manifest["urls"][0]
 print("Download URL:", download_url)
 
 # download file
-audio = requests.get(download_url)
+# audio = requests.get(download_url)
 
-with open("track.flac", "wb") as f:
-    f.write(audio.content)
+# with open("track.flac", "wb") as f:
+#     f.write(audio.content)
 
 print("Downloaded!")

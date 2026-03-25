@@ -20,7 +20,9 @@ class Track:
     copyright: str
     date: datetime.date
     bpm: int | None
-    replay_gain: float | None
-    replay_gain_peak: float | None
-    cover_tag: str | None
+    replay_gain_album_gain: float | None
+    replay_gain_album_peak: float | None
+    replay_gain_track_gain: float | None
+    replay_gain_track_peak: float | None
+    cover_url: str
     download_url: str

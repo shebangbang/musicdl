@@ -10,6 +10,7 @@ import requests
 from musicdl.config import settings
 from musicdl.exceptions import (
     APINetworkError,
+    APIRequestTimeout,
     InvalidIDError,
     MalformedJSONError,
     ManifestParsingError,
@@ -28,7 +29,7 @@ class Resource(Enum):
     COVER = "cover"
 
 
-# helper functions
+# Helper functions
 def _decode_and_parse_manifest(manifest: str) -> str:
     try:
         manifest_json = base64.b64decode(manifest).decode()
@@ -43,7 +44,7 @@ def _decode_and_parse_manifest(manifest: str) -> str:
 
 
 def _check_response_validity(data: dict[str, Any]) -> bool:
-    valid_fields = {"data", "playlist", "items", "artist", "albums", "tracks"}
+    valid_fields = {"data", "playlist", "items", "artist", "albums", "tracks", "covers"}
     if "version" in data and len(data) >= 2:
         if any(field in data for field in valid_fields):
             return True
@@ -83,6 +84,8 @@ class APIClient:
             raise APINetworkError
         except requests.exceptions.HTTPError:
             raise InvalidIDError
+        except requests.exceptions.ReadTimeout:
+            raise APIRequestTimeout
 
         data = r.json()
         if _check_response_validity(data):
@@ -96,6 +99,9 @@ class APIClient:
 
         album_id = track_data["album"]["id"]
         album_metadata = self._fetch_resource_info(Resource.ALBUM, album_id)["data"]
+
+        cover_url = self._fetch_resource_info(Resource.COVER, track_id)["covers"][0]
+        cover_url = cover_url.get("1280") or cover_url.get("640")
 
         track_location = self._fetch_resource_info(Resource.TRACK, track_id)["data"]
         download_url = _decode_and_parse_manifest(track_location["manifest"])
@@ -118,9 +124,11 @@ class APIClient:
                 track_data["copyright"],
                 datetime.datetime.strptime(album_metadata["releaseDate"], "%Y-%m-%d").date(),
                 track_data["bpm"],
+                track_location["albumReplayGain"],
+                track_location["albumPeakAmplitude"],
                 track_data["replayGain"],
                 track_data["peak"],
-                track_data["album"]["cover"],
+                cover_url,
                 download_url,
             )
         except KeyError:
