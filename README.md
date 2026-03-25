@@ -2,13 +2,13 @@
 
 A command line tool to simplify the process of downloading tracks through Tidal's API.
 
-NOTE: You must have a premium Tidal subscription in order to use the API. Additionally, in order to download through aria2, please [install](https://github.com/aria2/aria2) it separately.
+NOTE: You must have a premium Tidal subscription in order to use the API.
 
 ## Features
 
 - Simple CLI
 - Add individual tracks, or an album
-- Download files using `aria2c`
+- Download files
 
 ## Installation
 
@@ -21,9 +21,18 @@ uv run musicdl
 
 ## Options and Flags
 
-    -h,     --help                      Print this help message and exit
-    -t,     --token     TEXT            Set API token and save it locally
-    -o,     --output    TEXT            Specify path for output files
+```bash
+positional arguments:
+    {track,album}       Resource Type
+    resource_id         Resource ID
+
+options:
+    -h, --help          show this help message and exit
+    -l, --license       Show license information and exit
+    -f, --folder FOLDER Output folder path
+    -q, --quiet         Use quiet output
+    -v, --verbose       Use verbose output
+```
 
 ## API Token
 
@@ -31,10 +40,4 @@ uv run musicdl
 
 ```bash
 export TIDAL_API_TOKEN=your_token_here
-```
-
-- Windows (PowerShell):
-
-```powershell
-$env:TIDAL_API_TOKEN=your_token_here
 ```
