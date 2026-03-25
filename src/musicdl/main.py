@@ -15,7 +15,8 @@ from musicdl.cli import create_arg_parser
 from musicdl.config import settings
 from musicdl.downloader import Downloader
 from musicdl.exceptions import APIError, DownloaderError
-from musicdl.metadata import write_flac_metadata
+from musicdl.filesystem import resolve_output_directory
+from musicdl.metadata import write_flac_metadata, write_mp3_metadata
 from musicdl.naming import generate_filename
 
 logger = logging.getLogger(__name__)
@@ -30,6 +31,9 @@ def main(argv: list[str] | None = None) -> int:
 
     parser = create_arg_parser()
     parsed_args = parser.parse_args(args=argv)
+
+    # Argument override
+    settings.output_directory = resolve_output_directory(parsed_args.folder)
 
     if parsed_args.quiet:
         verbosity_level = logging.ERROR
@@ -61,7 +65,10 @@ def main(argv: list[str] | None = None) -> int:
 
             # Tagging
             logging.info("Attempting to tag track")
-            write_flac_metadata(track_location, cover_location, track)
+            if file_extension == "flac":
+                write_flac_metadata(track_location, cover_location, track)
+            elif file_extension == "mp3":
+                write_mp3_metadata(track_location, cover_location, track)
             logging.info("Tagging complete")
 
     except (APIError, DownloaderError) as e:

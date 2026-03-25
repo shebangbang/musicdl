@@ -23,6 +23,23 @@ FLAC_TAG_MAP = {
     "replay_gain_track_peak": "REPLAYGAIN_TRACK_PEAK",
 }
 
+MP3_TAG_MAP = {
+    "title": "TIT2",
+    "album_title": "TALB",
+    "artist": "TPE2",
+    "contributing_artists": "TPE1",
+    "track_number": "TRCK",
+    "volume_number": "TPOS",
+    "isrc": "TSRC",
+    "copyright": "TCOP",
+    "date": "TDAT",
+    "bpm": "TBPM",
+    "replay_gain_album_gain": "TXXX:REPLAYGAIN_ALBUM_GAIN",
+    "replay_gain_album_peak": "TXXX:REPLAYGAIN_ALBUM_PEAK",
+    "replay_gain_track_gain": "TXXX:REPLAYGAIN_TRACK_GAIN",
+    "replay_gain_track_peak": "TXXX:REPLAYGAIN_TRACK_PEAK",
+}
+
 
 # Helper functions
 def _format_replay_gain(type: str, value: float) -> str:
@@ -67,3 +84,12 @@ def write_flac_metadata(track_location: Path, cover_location: Path, track_info: 
 
     track.add_picture(_embed_cover(cover_location))
     track.save()
+
+
+def write_mp3_metadata(track_location: Path, cover_location: Path, track_info: Track):
+    """
+    Access Track dataclass to tag the corresponding fields in the flac file.
+    """
+
+    # TODO: Implement mp3 tagging
+    pass
