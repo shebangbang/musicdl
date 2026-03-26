@@ -29,7 +29,7 @@ class Downloader:
         self.output_directory.mkdir(parents=True, exist_ok=True)
         self.lock_file = self.output_directory / LOCK_NAME
 
-    def download(self, file_name: str, url: str) -> tuple[Path, int]:
+    def download(self, file_name: str, url: str) -> Path:
         """
         Function that downloads the file in chunks.
 
@@ -42,7 +42,7 @@ class Downloader:
                 output_path = self.output_directory / file_name
                 if output_path.exists():
                     logger.debug("File already exists")
-                    return output_path, output_path.stat().st_size
+                    return output_path
                 temporary_file = output_path.with_suffix(output_path.suffix + ".part")
 
                 # Check if file already exists
@@ -84,4 +84,4 @@ class Downloader:
             except requests.exceptions.HTTPError, requests.exceptions.ConnectionError, requests.exceptions.Timeout:
                 raise DownloadFailureError(file_name)
 
-        return output_path, current_size
+        return output_path
