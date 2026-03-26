@@ -2,6 +2,7 @@ import base64
 import binascii
 import datetime
 import json
+import logging
 from enum import Enum
 from typing import Any
 
@@ -18,6 +19,8 @@ from musicdl.exceptions import (
     MissingMetadataError,
 )
 from musicdl.models import Track
+
+logger = logging.getLogger(__name__)
 
 
 class Resource(Enum):
@@ -93,18 +96,22 @@ class APIClient:
         else:
             raise MalformedJSONError
 
-    def fetch_track_info(self, track_id: int) -> Track:
+    def fetch_track_info(self, track_id: int, album_metadata: int | None = None) -> Track:
         # Fetch info
         track_data = self._fetch_resource_info(Resource.INFO, track_id)["data"]
 
-        album_id = track_data["album"]["id"]
-        album_metadata = self._fetch_resource_info(Resource.ALBUM, album_id)["data"]
+        if not album_metadata:
+            album_id = track_data["album"]["id"]
+            album_metadata = self._fetch_resource_info(Resource.ALBUM, album_id)["data"]
 
         cover_url = self._fetch_resource_info(Resource.COVER, track_id)["covers"][0]
         cover_url = cover_url.get("1280") or cover_url.get("640")
 
         track_location = self._fetch_resource_info(Resource.TRACK, track_id)["data"]
         download_url = _decode_and_parse_manifest(track_location["manifest"])
+        if track_location["audioQuality"] != settings.quality:
+            logger.debug("Dropping quality due to unavailability")
+            settings.quality = track_location["audioQuality"]
 
         title_combined = (
             f"{track_data['title']} ({track_data['version']})" if track_data["version"] else track_data["title"]
@@ -135,3 +142,11 @@ class APIClient:
             raise MissingMetadataError
 
         return track
+
+    def fetch_album_info(self, album_id: int) -> list[Track]:
+        tracks = []
+        album_metadata = self._fetch_resource_info(Resource.ALBUM, album_id)["data"]
+        for track_info in album_metadata["items"]:
+            tracks.append(self.fetch_track_info(track_info["item"]["id"], album_metadata))
+
+        return tracks

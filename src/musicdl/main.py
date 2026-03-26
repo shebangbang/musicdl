@@ -9,18 +9,61 @@ uv run python -m musicdl 123
 """
 
 import logging
+from pathlib import Path
 
 from musicdl.api import APIClient
 from musicdl.cli import create_arg_parser
 from musicdl.config import settings
 from musicdl.downloader import Downloader
-from musicdl.exceptions import APIError, DownloaderError
+from musicdl.exceptions import APIError, DownloaderError, DownloadFailureError
 from musicdl.filesystem import resolve_output_directory
 from musicdl.metadata import write_flac_metadata, write_mp3_metadata
+from musicdl.models import Track
 from musicdl.naming import generate_destination_path, generate_file_name
 from musicdl.organizer import move_to_library
 
 logger = logging.getLogger(__name__)
+
+
+def _process_track(track: Track, downloader: Downloader) -> Path:
+    # Downloader
+    file_name, file_extension = generate_file_name(track)
+    track_destination_path, cover_destination_path = generate_destination_path(track)
+    expected_track_location = track_destination_path / file_name
+    expected_cover_location = cover_destination_path / "cover.jpg"
+
+    if expected_track_location.exists():
+        logger.info("File already exists; skipping download")
+        track_location = expected_track_location
+    else:
+        logger.info(f"Downloading {file_name}")
+        track_location = downloader.download(file_name, track.download_url)
+        logger.info(f"{file_name} downloaded")
+
+        if expected_cover_location.exists():
+            logger.info("Cover already exists; skipping download")
+            cover_location = expected_cover_location
+        else:
+            logger.info("Downloading cover")
+            cover_location = downloader.download("cover.jpg", track.cover_url)
+            logger.info("Download complete")
+
+        # Tagging
+        logger.info("Attempting to tag track")
+        if file_extension == "flac":
+            write_flac_metadata(track_location, cover_location, track)
+        elif file_extension == "mp3":
+            write_mp3_metadata(track_location, cover_location, track)
+        logger.info("Tagging complete")
+
+        # Moving
+        logger.info("Creating and moving to destination")
+        track_location, cover_location = move_to_library(
+            track, expected_track_location, expected_cover_location, file_name
+        )
+        logger.info("Moved to destination")
+
+    return track_location
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -46,51 +89,25 @@ def main(argv: list[str] | None = None) -> int:
     logging.getLogger().setLevel(verbosity_level)
 
     api_client = APIClient(settings.api_url)
-
     downloader = Downloader(settings.output_directory)
 
     try:
         if parsed_args.resource_type == "track":
             # API
             track = api_client.fetch_track_info(parsed_args.resource_id)
+            final_track_location = _process_track(track, downloader)
+            logger.info(f"Track in {final_track_location}")
 
-            # Downloader
-            # TODO: Check availability of quality
-            file_name, file_extension = generate_file_name(track)
-            track_destination_path, cover_destination_path = generate_destination_path(track)
-            expected_track_location = track_destination_path / file_name
-            expected_cover_location = cover_destination_path / "cover.jpg"
-
-            if expected_track_location.exists():
-                logging.info("File already exists; skipping download")
-                track_location = expected_track_location
-            else:
-                logging.info(f"Downloading {file_name}")
-                track_location = downloader.download(file_name, track.download_url)
-                logging.info(f"{file_name} downloaded")
-
-                if expected_cover_location.exists():
-                    logging.info("Cover already exists; skipping download")
-                    cover_location = expected_cover_location
-                else:
-                    logging.info("Downloading cover")
-                    cover_location = downloader.download("cover.jpg", track.cover_url)
-                    logging.info("Download complete")
-
-                # Tagging
-                logging.info("Attempting to tag track")
-                if file_extension == "flac":
-                    write_flac_metadata(track_location, cover_location, track)
-                elif file_extension == "mp3":
-                    write_mp3_metadata(track_location, cover_location, track)
-                logging.info("Tagging complete")
-
-                # Moving
-                logging.info("Creating and moving to destination")
-                track_location, cover_location = move_to_library(
-                    track, expected_track_location, expected_cover_location, file_name
-                )
-                logging.info("Moved to destination")
+        elif parsed_args.resource_type == "album":
+            # API
+            album = api_client.fetch_album_info(parsed_args.resource_id)
+            final_track_locations = []
+            for track in album:
+                try:
+                    final_track_locations.append(_process_track(track, downloader))
+                except DownloadFailureError:
+                    logger.error(f"Failed to download {track.title}")
+                    continue
 
     except (APIError, DownloaderError) as e:
         if verbosity_level > 0:
