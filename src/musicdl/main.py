@@ -93,16 +93,22 @@ def main(argv: list[str] | None = None) -> int:
 
     try:
         if parsed_args.resource_type == "track":
-            # API
             track = api_client.fetch_track_info(parsed_args.resource_id)
             final_track_location = _process_track(track, downloader)
             logger.info(f"Track in {final_track_location}")
-
         elif parsed_args.resource_type == "album":
-            # API
             album = api_client.fetch_album_info(parsed_args.resource_id)
             final_track_locations = []
             for track in album:
+                try:
+                    final_track_locations.append(_process_track(track, downloader))
+                except DownloadFailureError:
+                    logger.error(f"Failed to download {track.title}")
+                    continue
+        elif parsed_args.resource_type == "playlist":
+            playlist = api_client.fetch_playlist_info(parsed_args.resource_id)
+            final_track_locations = []
+            for track in playlist:
                 try:
                     final_track_locations.append(_process_track(track, downloader))
                 except DownloadFailureError:

@@ -69,7 +69,7 @@ class APIClient:
             "Connection": "keep-alive",
         })
 
-    def _fetch_resource_info(self, resource_type: Resource, resource_id: int) -> dict[str, Any]:
+    def _fetch_resource_info(self, resource_type: Resource, resource_id: str) -> dict[str, Any]:
         """
         Generic resource info fetcher.
         """
@@ -96,7 +96,7 @@ class APIClient:
         else:
             raise MalformedJSONError
 
-    def fetch_track_info(self, track_id: int, album_metadata: int | None = None) -> Track:
+    def fetch_track_info(self, track_id: str, album_metadata: dict | None = None) -> Track:
         # Fetch info
         track_data = self._fetch_resource_info(Resource.INFO, track_id)["data"]
 
@@ -143,10 +143,18 @@ class APIClient:
 
         return track
 
-    def fetch_album_info(self, album_id: int) -> list[Track]:
+    def fetch_album_info(self, album_id: str) -> list[Track]:
         tracks = []
         album_metadata = self._fetch_resource_info(Resource.ALBUM, album_id)["data"]
         for track_info in album_metadata["items"]:
             tracks.append(self.fetch_track_info(track_info["item"]["id"], album_metadata))
+
+        return tracks
+
+    def fetch_playlist_info(self, playlist_uuid: str) -> list[Track]:
+        tracks = []
+        playlist_metadata = self._fetch_resource_info(Resource.PLAYLIST, playlist_uuid)
+        for track_info in playlist_metadata["items"]:
+            tracks.append(self.fetch_track_info(track_info["item"]["id"]))
 
         return tracks

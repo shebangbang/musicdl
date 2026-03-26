@@ -52,8 +52,8 @@ def create_arg_parser() -> argparse.ArgumentParser:
         formatter_class=argparse.RawTextHelpFormatter,
     )
 
-    parser.add_argument("resource_type", choices=("track", "album"), help="Resource Type")
-    parser.add_argument("resource_id", help="Resource ID")
+    parser.add_argument("resource_type", choices=("track", "album", "playlist"), help="Resource Type")
+    parser.add_argument("resource_id", type=str, help="Resource ID")
     parser.add_argument(
         "-l",
         "--license",
