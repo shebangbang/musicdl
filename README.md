@@ -1,14 +1,14 @@
 # musicdl
 
-A command line tool to simplify the process of downloading tracks through Tidal's API.
+A command line tool to simplify the process of downloading tracks through the HiFi-API.
 
-NOTE: You must have a premium Tidal subscription in order to use the API.
+> [!IMPORTANT]
+> Music piracy is illegal in most countries. This project is intended for use with a valid Tidal account for educational purposes only (for example, in your homelab).
 
 ## Features
 
 - Simple CLI
-- Add individual tracks, or an album
-- Download files
+- Download individual tracks, albums, or playlists
 
 ## Installation
 
@@ -16,15 +16,15 @@ NOTE: You must have a premium Tidal subscription in order to use the API.
 git clone https://github.com/arlechinus/musicdl
 cd musicdl
 uv sync
-uv run musicdl
+uv run musicdl --help
 ```
 
 ## Options and Flags
 
 ```bash
 positional arguments:
-    {track,album}       Resource Type
-    resource_id         Resource ID
+    {track,album,playlist} Resource Type
+    resource_id            Resource ID
 
 options:
     -h, --help          show this help message and exit
@@ -32,12 +32,4 @@ options:
     -f, --folder FOLDER Output folder path
     -q, --quiet         Use quiet output
     -v, --verbose       Use verbose output
-```
-
-## API Token
-
-- Linux/macOS:
-
-```bash
-export TIDAL_API_TOKEN=your_token_here
 ```
