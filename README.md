@@ -3,7 +3,7 @@
 A command line tool to simplify the process of downloading tracks through the HiFi-API.
 
 > [!IMPORTANT]
-> Music piracy is illegal in most countries. This project is intended for use with a valid Tidal account for educational purposes only (for example, in your homelab).
+> Music piracy is illegal in most countries. This project is intended for use with a valid Tidal account for educational purposes only for example, in your homelab.
 
 ## Features
 
@@ -23,13 +23,13 @@ uv run musicdl --help
 
 ```bash
 positional arguments:
-    {track,album,playlist} Resource Type
-    resource_id            Resource ID
+    {track,album,playlist}  Resource Type
+    resource_id             Resource ID
 
 options:
-    -h, --help          show this help message and exit
-    -l, --license       Show license information and exit
-    -f, --folder FOLDER Output folder path
-    -q, --quiet         Use quiet output
-    -v, --verbose       Use verbose output
+    -h, --help              show this help message and exit
+    -l, --license           Show license information and exit
+    -f, --folder FOLDER     Output folder path
+    -q, --quiet             Use quiet output
+    -v, --verbose           Use verbose output
 ```
