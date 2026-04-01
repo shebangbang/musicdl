@@ -92,28 +92,41 @@ def main(argv: list[str] | None = None) -> int:
     downloader = Downloader(settings.output_directory)
 
     try:
-        if parsed_args.resource_type == "track":
-            track = api_client.fetch_track_info(parsed_args.resource_id)
-            final_track_location = _process_track(track, downloader)
-            logger.info(f"Track in {final_track_location}")
-        elif parsed_args.resource_type == "album":
-            album = api_client.fetch_album_info(parsed_args.resource_id)
-            final_track_locations = []
-            for track in album:
-                try:
-                    final_track_locations.append(_process_track(track, downloader))
-                except DownloadFailureError:
-                    logger.error(f"Failed to download {track.title}")
-                    continue
-        elif parsed_args.resource_type == "playlist":
-            playlist = api_client.fetch_playlist_info(parsed_args.resource_id)
-            final_track_locations = []
-            for track in playlist:
-                try:
-                    final_track_locations.append(_process_track(track, downloader))
-                except DownloadFailureError:
-                    logger.error(f"Failed to download {track.title}")
-                    continue
+        if parsed_args.action == "download":
+            if parsed_args.resource_type == "track":
+                track = api_client.fetch_track_info(parsed_args.resource_id_query)
+                final_track_location = _process_track(track, downloader)
+                logger.info(f"Track in {final_track_location}")
+            elif parsed_args.resource_type == "album":
+                album = api_client.fetch_album_info(parsed_args.resource_id_query)
+                final_track_locations = []
+                for track in album:
+                    try:
+                        final_track_locations.append(_process_track(track, downloader))
+                    except DownloadFailureError:
+                        logger.error(f"Failed to download {track.title}")
+                        continue
+            elif parsed_args.resource_type == "playlist":
+                playlist = api_client.fetch_playlist_info(parsed_args.resource_id_query)
+                final_track_locations = []
+                for track in playlist:
+                    try:
+                        final_track_locations.append(_process_track(track, downloader))
+                    except DownloadFailureError:
+                        logger.error(f"Failed to download {track.title}")
+                        continue
+        elif parsed_args.action == "search":
+            results = []
+            if parsed_args.resource_type == "track":
+                results = api_client.fetch_track_search_results(parsed_args.resource_id_query)
+            elif parsed_args.resource_type == "album":
+                results = api_client.fetch_album_search_results(parsed_args.resource_id_query)
+            else:
+                logger.error(f"Invalid argument {parsed_args.resource_type}")
+
+            print("Top 5 search results:")
+            for result in results:
+                print(f"{result['id']} - {result['title']} - {result['album']['title']}")
 
     except (APIError, DownloaderError) as e:
         if verbosity_level > 0:

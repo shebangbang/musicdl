@@ -36,6 +36,10 @@ download_url = manifest["urls"][0]
 
 print("Download URL:", download_url)
 
+r = requests.get(f"{API}/search/", params={"s": "Be with you Muse"})
+data = r.json()
+print(data)
+
 # download file
 # audio = requests.get(download_url)
 

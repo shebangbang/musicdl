@@ -96,6 +96,35 @@ class APIClient:
         else:
             raise MalformedJSONError
 
+    def _fetch_search_results(self, resource_type: Resource, query: str) -> dict[str, Any]:
+        """
+        Generic search results fetcher based on query.
+        """
+        parameters = {"limit": 5}
+        if resource_type == Resource.TRACK:
+            parameters["s"] = query
+        elif resource_type == Resource.ALBUM:
+            parameters["al"] = query
+        try:
+            r = self.session.get(
+                f"{self.api}/search/",
+                params=parameters,
+                timeout=settings.timeout,
+            )
+            r.raise_for_status()
+        except requests.exceptions.ConnectionError:
+            raise APINetworkError
+        except requests.exceptions.HTTPError:
+            raise InvalidIDError
+        except requests.exceptions.ReadTimeout:
+            raise APIRequestTimeout
+
+        data = r.json()
+        if _check_response_validity(data):
+            return data
+        else:
+            raise MalformedJSONError
+
     def fetch_track_info(self, track_id: str, album_metadata: dict | None = None) -> Track:
         # Fetch info
         track_data = self._fetch_resource_info(Resource.INFO, track_id)["data"]
@@ -158,3 +187,11 @@ class APIClient:
             tracks.append(self.fetch_track_info(track_info["item"]["id"]))
 
         return tracks
+
+    def fetch_track_search_results(self, query: str) -> list[dict[str, Any]]:
+        results = self._fetch_search_results(Resource.TRACK, query)
+        return results["data"]["items"]
+
+    def fetch_album_search_results(self, query: str) -> list[dict[str, Any]]:
+        results = self._fetch_search_results(Resource.ALBUM, query)
+        return results["data"]["items"]
