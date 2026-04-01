@@ -194,4 +194,4 @@ class APIClient:
 
     def fetch_album_search_results(self, query: str) -> list[dict[str, Any]]:
         results = self._fetch_search_results(Resource.ALBUM, query)
-        return results["data"]["items"]
+        return results["data"]["albums"]["items"]

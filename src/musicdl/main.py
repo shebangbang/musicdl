@@ -117,16 +117,17 @@ def main(argv: list[str] | None = None) -> int:
                         continue
         elif parsed_args.action == "search":
             results = []
+            print("Top search results:")
             if parsed_args.resource_type == "track":
                 results = api_client.fetch_track_search_results(parsed_args.resource_id_query)
+                for result in results:
+                    print(f"{result['id']} - {result['title']} - {result['album']['title']}")
             elif parsed_args.resource_type == "album":
                 results = api_client.fetch_album_search_results(parsed_args.resource_id_query)
+                for result in results:
+                    print(f"{result['id']} - {result['title']} - {result['artists'][0]['name']}")
             else:
                 logger.error(f"Invalid argument {parsed_args.resource_type}")
-
-            print("Top 5 search results:")
-            for result in results:
-                print(f"{result['id']} - {result['title']} - {result['album']['title']}")
 
     except (APIError, DownloaderError) as e:
         if verbosity_level > 0:
