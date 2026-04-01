@@ -9,6 +9,7 @@ A command line tool to simplify the process of downloading tracks through the Hi
 
 - Simple CLI
 - Download individual tracks, albums, or playlists
+- Search for tracks or albums using a query
 
 ## Installation
 
@@ -23,6 +24,7 @@ uv run musicdl --help
 
 ```bash
 positional arguments:
+    {download,search}       Action
     {track,album,playlist}  Resource Type
     resource_id             Resource ID
 
