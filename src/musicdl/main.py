@@ -125,7 +125,8 @@ def main(argv: list[str] | None = None) -> int:
             elif parsed_args.resource_type == "album":
                 results = api_client.fetch_album_search_results(parsed_args.resource_id_query)
                 for result in results:
-                    print(f"{result['id']} - {result['title']} - {result['artists'][0]['name']}")
+                    explicit = "(E)" if result["explicit"] else ""
+                    print(f"{result['id']} - {result['title']}{explicit} - {result['artists'][0]['name']}")
             else:
                 logger.error(f"Invalid argument {parsed_args.resource_type}")
 
